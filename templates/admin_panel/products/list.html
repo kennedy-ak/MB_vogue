@@ -1,0 +1,121 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Products - MB Vogue Admin{% endblock %}
+
+{% block page-title %}Products{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'admin_panel:dashboard' %}" class="text-decoration-none text-muted">&larr; Back to Dashboard</a>
+    </div>
+    <a href="{% url 'admin_panel:product_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Add Product
+    </a>
+</div>
+
+<div class="table-container">
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <form method="get" class="d-flex gap-2">
+                <input type="text" name="search" class="form-control" placeholder="Search products..." value="{{ search_query }}">
+                <button type="submit" class="btn btn-outline-primary">Search</button>
+            </form>
+        </div>
+        <div class="col-md-3">
+            <form method="get">
+                <select name="category" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if category_filter == cat.id|stringformat:"s" %}selected{% endif %}>
+                        {{ cat.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+        <div class="col-md-5 text-end">
+            {% if search_query or category_filter %}
+            <a href="{% url 'admin_panel:product_list' %}" class="btn btn-outline-secondary">Clear Filters</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>
+                        {% if product.images.first %}
+                        <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="product-thumb">
+                        {% else %}
+                        <div class="product-thumb bg-light d-flex align-items-center justify-content-center">
+                            <i class="bi bi-image text-muted"></i>
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong>{{ product.name }}</strong>
+                        <br><small class="text-muted">{{ product.slug }}</small>
+                    </td>
+                    <td>{{ product.category.name }}</td>
+                    <td><strong>GH₵{{ product.price }}</strong></td>
+                    <td>
+                        {% if product.featured %}
+                        <span class="badge badge-info">Featured</span>
+                        {% endif %}
+                        {% if product.available %}
+                        <span class="badge badge-success">Active</span>
+                        {% else %}
+                        <span class="badge badge-secondary">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% with total_stock=product.get_total_stock %}
+                            {% if total_stock == 0 %}
+                            <span class="badge badge-danger">Out of Stock</span>
+                            {% elif total_stock < 10 %}
+                            <span class="badge badge-warning">{{ total_stock }}</span>
+                            {% else %}
+                            <span class="badge badge-success">{{ total_stock }}</span>
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a href="{% url 'admin_panel:product_edit' product.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'admin_panel:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        <i class="bi bi-box-seam" style="font-size: 48px; display: block; margin-bottom: 10px;"></i>
+                        No products found
+                        <br>
+                        <a href="{% url 'admin_panel:product_create' %}" class="btn btn-primary mt-3">Add Your First Product</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}{{ profile.user.username }} - MB Vogue Admin{% endblock %}
+
+{% block page-title %}Customer Details{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'admin_panel:customer_list' %}" class="text-decoration-none text-muted">&larr; Back to Customers</a>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="table-container">
+            <h5 class="mb-3">Customer Information</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Name:</strong> {{ profile.user.get_full_name|default:profile.user.username }}</p>
+                    <p><strong>Username:</strong> {{ profile.user.username }}</p>
+                    <p><strong>Email:</strong> {{ profile.user.email }}</p>
+                    <p><strong>Phone:</strong> {{ profile.phone|default:"-" }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>City:</strong> {{ profile.city|default:"-" }}</p>
+                    <p><strong>State:</strong> {{ profile.state|default:"-" }}</p>
+                    <p><strong>Country:</strong> {{ profile.country }}</p>
+                    <p><strong>Member Since:</strong> {{ profile.created_at|date:"M d, Y" }}</p>
+                </div>
+            </div>
+
+            {% if profile.address %}
+            <hr class="my-3">
+            <h6>Address</h6>
+            <p>{{ profile.get_full_address }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        {% if profile.profile_picture %}
+        <div class="table-container text-center">
+            <img src="{{ profile.profile_picture.url }}" alt="{{ profile.user.username }}" class="img-fluid rounded" style="max-width: 200px;">
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="table-container">
+    <h5 class="mb-3">Recent Orders</h5>
+    {% if orders %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td><a href="{% url 'admin_panel:order_detail' order.id %}">{{ order.order_number }}</a></td>
+                    <td>{{ order.created_at|date:"M d, Y" }}</td>
+                    <td>GH₵{{ order.total_price }}</td>
+                    <td>
+                        <span class="badge
+                            {% if order.status == 'paid' %}badge-success
+                            {% elif order.status == 'pending' %}badge-warning
+                            {% elif order.status == 'delivered' %}badge-info
+                            {% else %}badge-secondary{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted text-center py-4">No orders yet</p>
+    {% endif %}
+</div>
+{% endblock %}

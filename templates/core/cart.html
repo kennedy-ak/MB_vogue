@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Shopping Cart - MB Vogue{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-4">Shopping Cart</h1>
+
+    {% if cart_items %}
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in cart_items %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if item.variant.product.get_first_image %}
+                                            <img src="{{ item.variant.product.get_first_image.url }}" alt="{{ item.variant.product.name }}" class="rounded me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ item.variant.product.name }}</h6>
+                                                <small class="text-muted">
+                                                    {{ item.variant.get_color_display }} - {{ item.variant.get_size_display }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>GH₵{{ item.variant.get_price }}</td>
+                                    <td>
+                                        <form method="post" action="{% url 'core:cart_update' item.id %}" class="d-flex gap-2">
+                                            {% csrf_token %}
+                                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.variant.stock }}" class="form-control form-control-sm" style="width: 70px;">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-arrow-clockwise"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                    <td>GH₵{{ item.get_total_price }}</td>
+                                    <td>
+                                        <a href="{% url 'core:cart_remove' item.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to remove this item?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Items ({{ cart.get_total_items }}):</span>
+                        <span>GH₵{{ cart.get_total_price }}</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-4">
+                        <strong>Total:</strong>
+                        <strong>GH₵{{ cart.get_total_price }}</strong>
+                    </div>
+                    <a href="{% url 'core:checkout' %}" class="btn btn-primary btn-lg w-100">
+                        Proceed to Checkout
+                    </a>
+                    <a href="{% url 'core:product_list' %}" class="btn btn-outline-secondary w-100 mt-2">
+                        Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-cart-x"></i> Your cart is empty.
+        <a href="{% url 'core:product_list' %}" class="alert-link">Start shopping</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Categories - MB Vogue Admin{% endblock %}
+
+{% block page-title %}Categories{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'admin_panel:dashboard' %}" class="text-decoration-none text-muted">&larr; Back to Dashboard</a>
+    </div>
+    <a href="{% url 'admin_panel:category_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Add Category
+    </a>
+</div>
+
+<div class="table-container">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <form method="get" class="d-flex gap-2">
+                <input type="text" name="search" class="form-control" placeholder="Search categories..." value="{{ search_query }}">
+                <button type="submit" class="btn btn-outline-primary">Search</button>
+                {% if search_query %}
+                <a href="{% url 'admin_panel:category_list' %}" class="btn btn-outline-secondary">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Slug</th>
+                    <th>Description</th>
+                    <th>Products</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                <tr>
+                    <td>
+                        <strong>{{ category.name }}</strong>
+                        {% if category.image %}
+                        <br><small class="text-muted">Has image</small>
+                        {% endif %}
+                    </td>
+                    <td><code class="text-muted">{{ category.slug }}</code></td>
+                    <td>{{ category.description|truncatewords:10|default:"-" }}</td>
+                    <td>{{ category.products.count }}</td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a href="{% url 'admin_panel:category_edit' category.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'admin_panel:category_delete' category.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                        <i class="bi bi-folder" style="font-size: 48px; display: block; margin-bottom: 10px;"></i>
+                        No categories found
+                        <br>
+                        <a href="{% url 'admin_panel:category_create' %}" class="btn btn-primary mt-3">Add Your First Category</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if categories.has_other_pages %}
+    <nav>
+        <ul class="pagination justify-content-center">
+            {% if categories.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ categories.previous_page_number }}">Previous</a></li>
+            {% endif %}
+
+            <li class="page-item active"><span class="page-link">{{ categories.number }}</span></li>
+
+            {% if categories.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ categories.next_page_number }}">Next</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ categories.paginator.num_pages }}">Last &raquo;</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

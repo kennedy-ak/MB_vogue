@@ -1,0 +1,164 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}{% if product %}Edit Product{% else %}Add Product{% endif %} - MB Vogue Admin{% endblock %}
+
+{% block page-title %}{% if product %}Edit Product{% else %}Add Product{% endif %}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'admin_panel:product_list' %}" class="text-decoration-none text-muted">&larr; Back to Products</a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="table-container mb-4">
+            <h5 class="mb-3">Product Information</h5>
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">Product Name *</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <div class="text-danger mt-1">{{ form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.price.id_for_label }}" class="form-label">Price (GH₵) *</label>
+                        {{ form.price }}
+                        {% if form.price.errors %}
+                        <div class="text-danger mt-1">{{ form.price.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label">Category *</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                        <div class="text-danger mt-1">{{ form.category.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.slug.id_for_label }}" class="form-label">Slug</label>
+                        {{ form.slug }}
+                        <small class="text-muted">Leave blank to auto-generate</small>
+                        {% if form.slug.errors %}
+                        <div class="text-danger mt-1">{{ form.slug.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <div class="text-danger mt-1">{{ form.description.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        {{ form.featured }}
+                        <label class="form-check-label" for="{{ form.featured.id_for_label }}">
+                            Featured Product
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        {{ form.available }}
+                        <label class="form-check-label" for="{{ form.available.id_for_label }}">
+                            Available for Sale
+                        </label>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> {% if product %}Update Product{% else %}Create Product{% endif %}
+                    </button>
+                    {% if product %}
+                    <a href="{% url 'admin_panel:product_list' %}" class="btn btn-outline-secondary">Done</a>
+                    {% else %}
+                    <a href="{% url 'admin_panel:product_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if product %}
+    <div class="col-lg-4">
+        <!-- Variants -->
+        <div class="table-container mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Variants</h5>
+                <a href="{% url 'admin_panel:variant_add' product.id %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-circle"></i> Add
+                </a>
+            </div>
+            {% if variants %}
+            <div class="list-group">
+                {% for variant in variants %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ variant.get_color_display }}</strong> - {{ variant.get_size_display }}
+                        <br>
+                        <small class="text-muted">Stock: {{ variant.stock }}</small>
+                        {% if variant.price_override %}
+                        <br><small class="text-primary">Price: GH₵{{ variant.price_override }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="btn-group">
+                        <a href="{% url 'admin_panel:variant_edit' variant.id %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'admin_panel:variant_delete' variant.id %}" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center">No variants yet</p>
+            {% endif %}
+        </div>
+
+        <!-- Images -->
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Images</h5>
+                <a href="{% url 'admin_panel:image_add' product.id %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-circle"></i> Add
+                </a>
+            </div>
+            {% if images %}
+            <div class="row g-2">
+                {% for image in images %}
+                <div class="col-6">
+                    <div class="position-relative">
+                        <img src="{{ image.image.url }}" alt="{{ image.alt_text }}" class="img-fluid rounded">
+                        {% if image.is_primary %}
+                        <span class="badge badge-success position-absolute top-0 start-0 m-1">Primary</span>
+                        {% endif %}
+                        <div class="mt-2 d-flex gap-1">
+                            {% if not image.is_primary %}
+                            <a href="{% url 'admin_panel:image_set_primary' image.id %}" class="btn btn-sm btn-outline-primary w-100">Set Primary</a>
+                            {% endif %}
+                            <a href="{% url 'admin_panel:image_delete' image.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center">No images yet</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

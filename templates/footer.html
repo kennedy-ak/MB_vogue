@@ -1,0 +1,55 @@
+{% load static %}
+<footer class="bg-dark text-white mt-5 py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <h5><i class="bi bi-handbag"></i> MB Vogue</h5>
+                <p class="text-white-50">Your destination for fashion and style. We bring you the latest trends at affordable prices.</p>
+            </div>
+            <div class="col-md-2 mb-4">
+                <h5 class="text-white">Quick Links</h5>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'core:home' %}" class="text-decoration-none text-white-50 hover-white">Home</a></li>
+                    <li><a href="{% url 'core:product_list' %}" class="text-decoration-none text-white-50 hover-white">Shop</a></li>
+                    <li><a href="{% url 'core:cart_detail' %}" class="text-decoration-none text-white-50 hover-white">Cart</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 mb-4">
+                <h5 class="text-white">Customer Service</h5>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-decoration-none text-white-50 hover-white">Contact Us</a></li>
+                    <li><a href="#" class="text-decoration-none text-white-50 hover-white">Shipping Policy</a></li>
+                    <li><a href="#" class="text-decoration-none text-white-50 hover-white">Returns & Exchanges</a></li>
+                    <li><a href="#" class="text-decoration-none text-white-50 hover-white">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 mb-4">
+                <h5 class="text-white">Connect With Us</h5>
+                <div class="mb-3">
+                    <a href="#" class="btn btn-outline-light btn-sm me-2"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="btn btn-outline-light btn-sm me-2"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="btn btn-outline-light btn-sm me-2"><i class="bi bi-twitter"></i></a>
+                </div>
+                <p class="text-white-50 small">
+                    <i class="bi bi-geo-alt"></i> Lagos, Nigeria<br>
+                    <i class="bi bi-envelope"></i> info@mbvogue.com<br>
+                    <i class="bi bi-telephone"></i> +234 XXX XXX XXXX
+                </p>
+            </div>
+        </div>
+        <hr style="border-color: rgba(255,255,255,0.1);">
+        <div class="text-center">
+            <p class="mb-0 text-white-50">&copy; {% now "Y" %} MB Vogue. All rights reserved.</p>
+        </div>
+    </div>
+
+    <style>
+        .text-white-50 {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .text-white-50.hover-white:hover {
+            color: rgba(255, 255, 255, 1) !important;
+        }
+    </style>
+</footer>

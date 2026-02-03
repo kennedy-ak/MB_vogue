@@ -1,0 +1,59 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}{% if variant %}Edit Variant{% else %}Add Variant{% endif %} - MB Vogue Admin{% endblock %}
+
+{% block page-title %}{% if variant %}Edit Variant{% else %}Add Variant{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'admin_panel:product_edit' product.id %}" class="text-decoration-none text-muted">&larr; Back to Product</a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="table-container">
+            <h5 class="mb-3">{% if variant %}Edit Variant{% else %}Add Variant{% endif %} for {{ product.name }}</h5>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="{{ form.size.id_for_label }}" class="form-label">Size *</label>
+                    {{ form.size }}
+                    {% if form.size.errors %}
+                    <div class="text-danger mt-1">{{ form.size.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.color.id_for_label }}" class="form-label">Color *</label>
+                    {{ form.color }}
+                    {% if form.color.errors %}
+                    <div class="text-danger mt-1">{{ form.color.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.stock.id_for_label }}" class="form-label">Stock Quantity *</label>
+                    {{ form.stock }}
+                    {% if form.stock.errors %}
+                    <div class="text-danger mt-1">{{ form.stock.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.price_override.id_for_label }}" class="form-label">Price Override (GH₵)</label>
+                    {{ form.price_override }}
+                    <small class="text-muted">Leave blank to use product price (GH₵{{ product.price }})</small>
+                    {% if form.price_override.errors %}
+                    <div class="text-danger mt-1">{{ form.price_override.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> {% if variant %}Update Variant{% else %}Add Variant{% endif %}
+                </button>
+                <a href="{% url 'admin_panel:product_edit' product.id %}" class="btn btn-outline-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

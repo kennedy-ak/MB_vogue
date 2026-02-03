@@ -1,0 +1,289 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Dashboard - MB Vogue Admin{% endblock %}
+
+{% block page-title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Revenue Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card primary">
+            <div class="icon">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+            <div class="value">GH₵{{ total_revenue|floatformat:0 }}</div>
+            <div class="label">Total Revenue</div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card success">
+            <div class="icon">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+            <div class="value">GH₵{{ revenue_today|floatformat:0 }}</div>
+            <div class="label">Today's Revenue</div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card warning">
+            <div class="icon">
+                <i class="bi bi-cart3"></i>
+            </div>
+            <div class="value">{{ total_orders }}</div>
+            <div class="label">Total Orders</div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card info">
+            <div class="icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="value">{{ total_users }}</div>
+            <div class="label">Total Customers</div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Status & More Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="table-container">
+            <h5 class="mb-4">Orders by Status</h5>
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                        <span class="text-muted">Pending</span>
+                        <span class="badge badge-warning">{{ pending_orders }}</span>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                        <span class="text-muted">Paid</span>
+                        <span class="badge badge-success">{{ paid_orders }}</span>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                        <span class="text-muted">Processing</span>
+                        <span class="badge badge-info">{{ processing_orders }}</span>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                        <span class="text-muted">Shipped</span>
+                        <span class="badge badge-secondary">{{ shipped_orders }}</span>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                        <span class="text-muted">Delivered</span>
+                        <span class="badge badge-success">{{ delivered_orders }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="table-container">
+            <h5 class="mb-4">Store Overview</h5>
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="stat-card" style="padding: 15px;">
+                        <div class="label">Products</div>
+                        <div class="value">{{ total_products }}</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="stat-card" style="padding: 15px;">
+                        <div class="label">Categories</div>
+                        <div class="value">{{ total_categories }}</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="stat-card" style="padding: 15px;">
+                        <div class="label">7 Days Revenue</div>
+                        <div class="value" style="font-size: 20px;">GH₵{{ revenue_last_7_days|floatformat:0 }}</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="stat-card" style="padding: 15px;">
+                        <div class="label">30 Days Revenue</div>
+                        <div class="value" style="font-size: 20px;">GH₵{{ revenue_last_30_days|floatformat:0 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders & Low Stock -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Recent Orders</h5>
+                <a href="{% url 'admin_panel:order_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            {% if recent_orders %}
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td><a href="{% url 'admin_panel:order_detail' order.id %}">{{ order.order_number }}</a></td>
+                            <td>{{ order.user.username }}</td>
+                            <td>GH₵{{ order.total_price }}</td>
+                            <td>
+                                <span class="badge
+                                    {% if order.status == 'paid' %}badge-success
+                                    {% elif order.status == 'pending' %}badge-warning
+                                    {% elif order.status == 'delivered' %}badge-info
+                                    {% else %}badge-secondary{% endif %}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-4">No orders yet</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">{% if low_stock_variants %}Low Stock Alerts{% else %}Stock Status{% endif %}</h5>
+                <a href="{% url 'admin_panel:product_list' %}" class="btn btn-sm btn-outline-primary">View Products</a>
+            </div>
+            {% if low_stock_variants %}
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Variant</th>
+                            <th>Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for variant in low_stock_variants %}
+                        <tr>
+                            <td><a href="{% url 'admin_panel:product_edit' variant.product.id %}">{{ variant.product.name }}</a></td>
+                            <td>{{ variant.get_color_display }} - {{ variant.get_size_display }}</td>
+                            <td>
+                                <span class="badge {% if variant.stock == 0 %}badge-danger{% else %}badge-warning{% endif %}">
+                                    {{ variant.stock }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-center py-4"><i class="bi bi-check-circle text-success" style="font-size: 48px;"></i></p>
+            <p class="text-muted text-center">All products are well stocked!</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Top Selling Products -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="table-container">
+            <h5 class="mb-4">Top Selling Products</h5>
+            {% if top_products %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Total Sold</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in top_products %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'admin_panel:product_edit' product.id %}" class="text-decoration-none">
+                                    {{ product.name }}
+                                </a>
+                            </td>
+                            <td>{{ product.category.name }}</td>
+                            <td>GH₵{{ product.price }}</td>
+                            <td><strong>{{ product.total_sold|default:0 }}</strong></td>
+                            <td>
+                                {% if product.available %}
+                                    <span class="badge badge-success">Active</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">Inactive</span>
+                                {% endif %}
+                                {% if product.featured %}
+                                    <span class="badge badge-info">Featured</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-4">No sales data yet</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-4">
+    <div class="col-12">
+        <div class="table-container">
+            <h5 class="mb-4">Quick Actions</h5>
+            <div class="row g-3">
+                <div class="col-md-3 col-6">
+                    <a href="{% url 'admin_panel:product_create' %}" class="btn btn-primary w-100 py-3">
+                        <i class="bi bi-plus-circle d-block mb-2" style="font-size: 24px;"></i>
+                        Add Product
+                    </a>
+                </div>
+                <div class="col-md-3 col-6">
+                    <a href="{% url 'admin_panel:category_create' %}" class="btn btn-success w-100 py-3">
+                        <i class="bi bi-folder-plus d-block mb-2" style="font-size: 24px;"></i>
+                        Add Category
+                    </a>
+                </div>
+                <div class="col-md-3 col-6">
+                    <a href="{% url 'admin_panel:order_list' %}" class="btn btn-warning w-100 py-3">
+                        <i class="bi bi-cart-check d-block mb-2" style="font-size: 24px;"></i>
+                        View Orders
+                    </a>
+                </div>
+                <div class="col-md-3 col-6">
+                    <a href="{% url 'admin_panel:customer_list' %}" class="btn btn-info w-100 py-3">
+                        <i class="bi bi-people d-block mb-2" style="font-size: 24px;"></i>
+                        Customers
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

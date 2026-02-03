@@ -1,0 +1,70 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Login - MB Vogue Admin{% endblock %}
+
+{% block login_content %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .login-card {
+        background: white;
+        border-radius: 20px;
+        padding: 50px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        width: 100%;
+        max-width: 400px;
+    }
+    .login-logo {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .login-logo h1 {
+        font-size: 32px;
+        font-weight: 700;
+        color: #667eea;
+    }
+    .login-logo p {
+        color: #64748b;
+        margin-top: 5px;
+    }
+</style>
+
+<div class="login-card">
+    <div class="login-logo">
+        <h1>MB Vogue</h1>
+        <p>Admin Panel</p>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username" required autofocus>
+        </div>
+        <div class="mb-4">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 py-2">
+            Sign In
+        </button>
+    </form>
+
+    <p class="text-center mt-4 text-muted small">
+        <a href="{% url 'core:home' %}" class="text-decoration-none">&larr; Back to Store</a>
+    </p>
+</div>
+{% endblock %}

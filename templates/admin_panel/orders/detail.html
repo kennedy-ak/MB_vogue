@@ -1,0 +1,145 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Order {{ order.order_number }} - MB Vogue Admin{% endblock %}
+
+{% block page-title %}Order Details{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'admin_panel:order_list' %}" class="text-decoration-none text-muted">&larr; Back to Orders</a>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="table-container">
+            <h5 class="mb-3">Order Information</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Order #:</strong> {{ order.order_number }}</p>
+                    <p><strong>Date:</strong> {{ order.created_at|date:"M d, Y H:i" }}</p>
+                    <p><strong>Customer:</strong> {{ order.user.username }}</p>
+                    <p><strong>Email:</strong> {{ order.email }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Total Amount:</strong> <span class="text-primary">GH₵{{ order.total_price }}</span></p>
+                    <p>
+                        <strong>Status:</strong>
+                        <span class="badge
+                            {% if order.status == 'paid' %}badge-success
+                            {% elif order.status == 'pending' %}badge-warning
+                            {% elif order.status == 'delivered' %}badge-info
+                            {% elif order.status == 'cancelled' %}badge-danger
+                            {% else %}badge-secondary{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <hr class="my-3">
+
+            <h6>Shipping Address</h6>
+            <p class="mb-1">{{ order.full_name }}</p>
+            <p class="mb-1">{{ order.address }}</p>
+            <p class="mb-1">{{ order.city }}, {{ order.state }}</p>
+            <p class="mb-1">{{ order.postal_code }}</p>
+            <p class="mb-1">{{ order.country }}</p>
+            <p><strong>Phone:</strong> {{ order.phone }}</p>
+
+            {% if order.notes %}
+            <hr class="my-3">
+            <h6>Notes</h6>
+            <p>{{ order.notes }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="table-container">
+            <h5 class="mb-3">Update Status</h5>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    {{ form.status }}
+                    <label for="{{ form.status.id_for_label }}" class="form-label">Order Status</label>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-check-circle"></i> Update Status
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="table-container">
+    <h5 class="mb-3">Order Items</h5>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Variant</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>
+                        {% if item.variant %}
+                        <strong>{{ item.variant.product.name }}</strong>
+                        {% else %}
+                        <em>Deleted Product</em>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.variant %}
+                        {{ item.variant.get_color_display }} - {{ item.variant.get_size_display }}
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td>GH₵{{ item.price }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td><strong>GH₵{{ item.get_total_price }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4" class="text-end"><strong>Order Total:</strong></td>
+                    <td><strong class="text-primary">GH₵{{ order.total_price }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+{% if order.payment %}
+<div class="table-container mt-4">
+    <h5 class="mb-3">Payment Information</h5>
+    <div class="row">
+        <div class="col-md-6">
+            <p><strong>Reference:</strong> {{ order.payment.reference }}</p>
+            <p><strong>Amount:</strong> GH₵{{ order.payment.amount }}</p>
+        </div>
+        <div class="col-md-6">
+            <p><strong>Status:</strong>
+                <span class="badge
+                    {% if order.payment.status == 'success' %}badge-success
+                    {% elif order.payment.status == 'pending' %}badge-warning
+                    {% elif order.payment.status == 'failed' %}badge-danger
+                    {% else %}badge-secondary{% endif %}">
+                    {{ order.payment.get_status_display }}
+                </span>
+            </p>
+            {% if order.payment.verified_at %}
+            <p><strong>Verified:</strong> {{ order.payment.verified_at|date:"M d, Y H:i" }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

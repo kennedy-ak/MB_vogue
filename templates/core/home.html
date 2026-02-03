@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}MB Vogue - Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-dark text-white py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-3">Welcome to MB Vogue</h1>
+                <p class="lead mb-4">Discover the latest fashion trends. Shop our collection of stylish clothing and accessories.</p>
+                <a href="{% url 'core:product_list' %}" class="btn btn-primary btn-lg">Shop Now</a>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <i class="bi bi-bag-check" style="font-size: 200px; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+{% if categories %}
+<section class="categories-section mb-5">
+    <div class="container">
+        <h2 class="text-center mb-4">Shop by Category</h2>
+        <div class="row">
+            {% for category in categories %}
+            <div class="col-md-4 mb-3">
+                <div class="card category-card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ category.name }}</h5>
+                        <a href="{{ category.get_absolute_url }}" class="btn btn-outline-dark">Browse</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Featured Products Section -->
+{% if featured_products %}
+<section class="featured-products-section mb-5">
+    <div class="container">
+        <h2 class="text-center mb-4">Featured Products</h2>
+        <div class="row">
+            {% for product in featured_products %}
+            <div class="col-md-3 mb-4">
+                <div class="card product-card h-100">
+                    {% if product.get_first_image %}
+                    <img src="{{ product.get_first_image.url }}" class="card-img-top" alt="{{ product.name }}">
+                    {% else %}
+                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 250px;">
+                        <i class="bi bi-image" style="font-size: 50px;"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text text-primary fw-bold">GH₵{{ product.price }}</p>
+                        <a href="{{ product.get_absolute_url }}" class="btn btn-outline-primary w-100">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- New Arrivals Section -->
+{% if new_arrivals %}
+<section class="new-arrivals-section mb-5">
+    <div class="container">
+        <h2 class="text-center mb-4">New Arrivals</h2>
+        <div class="row">
+            {% for product in new_arrivals %}
+            <div class="col-md-3 mb-4">
+                <div class="card product-card h-100">
+                    {% if product.get_first_image %}
+                    <img src="{{ product.get_first_image.url }}" class="card-img-top" alt="{{ product.name }}">
+                    {% else %}
+                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 250px;">
+                        <i class="bi bi-image" style="font-size: 50px;"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text text-primary fw-bold">GH₵{{ product.price }}</p>
+                        <a href="{{ product.get_absolute_url }}" class="btn btn-outline-primary w-100">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Orders - MB Vogue Admin{% endblock %}
+
+{% block page-title %}Orders{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'admin_panel:dashboard' %}" class="text-decoration-none text-muted">&larr; Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <form method="get" class="d-flex gap-2">
+                <input type="text" name="search" class="form-control" placeholder="Search orders..." value="{{ search_query }}">
+                <button type="submit" class="btn btn-outline-primary">Search</button>
+                {% if search_query %}
+                <a href="{% url 'admin_panel:order_list' %}" class="btn btn-outline-secondary">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+        <div class="col-md-3">
+            <form method="get">
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Statuses</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td><strong>{{ order.order_number }}</strong></td>
+                    <td>
+                        {{ order.user.username }}
+                        <br><small class="text-muted">{{ order.email }}</small>
+                    </td>
+                    <td>{{ order.created_at|date:"M d, Y" }}</td>
+                    <td><strong>GH₵{{ order.total_price }}</strong></td>
+                    <td>
+                        <span class="badge
+                            {% if order.status == 'paid' %}badge-success
+                            {% elif order.status == 'pending' %}badge-warning
+                            {% elif order.status == 'delivered' %}badge-info
+                            {% elif order.status == 'cancelled' %}badge-danger
+                            {% else %}badge-secondary{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'admin_panel:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        <i class="bi bi-cart-x" style="font-size: 48px; display: block; margin-bottom: 10px;"></i>
+                        No orders found
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

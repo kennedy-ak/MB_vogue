@@ -1,0 +1,65 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}{% if category %}Edit Category{% else %}Add Category{% endif %} - MB Vogue Admin{% endblock %}
+
+{% block page-title %}{% if category %}Edit Category{% else %}Add Category{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'admin_panel:category_list' %}" class="text-decoration-none text-muted">&larr; Back to Categories</a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="table-container">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="{{ form.name.id_for_label }}" class="form-label">Category Name *</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <div class="text-danger mt-1">{{ form.name.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.slug.id_for_label }}" class="form-label">Slug</label>
+                    {{ form.slug }}
+                    <small class="text-muted">Leave blank to auto-generate from name</small>
+                    {% if form.slug.errors %}
+                    <div class="text-danger mt-1">{{ form.slug.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <div class="text-danger mt-1">{{ form.description.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.image.id_for_label }}" class="form-label">Category Image</label>
+                    {{ form.image }}
+                    {% if form.image.errors %}
+                    <div class="text-danger mt-1">{{ form.image.errors }}</div>
+                    {% endif %}
+                    {% if category.image %}
+                    <div class="mt-2">
+                        <img src="{{ category.image.url }}" alt="{{ category.name }}" class="img-thumbnail" style="max-width: 200px;">
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> {% if category %}Update Category{% else %}Create Category{% endif %}
+                    </button>
+                    <a href="{% url 'admin_panel:category_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
