@@ -1,0 +1,1777 @@
+================================================================================
+MB VOGUE E-COMMERCE - QA TEST CASES
+================================================================================
+Version: 1.0
+Last Updated: 2026-02-04
+Test Environment: Development/Staging
+================================================================================
+
+TABLE OF CONTENTS
+-----------------
+1. User Registration & Authentication
+2. Guest Shopping & Cart Management
+3. User Shopping & Cart Management
+4. Checkout & Payment Flow
+5. Order Management
+6. Email Notifications
+7. Profile Management
+8. Password Reset
+9. Product Browsing
+10. UI/UX & Theme Testing
+11. Security Testing
+12. Edge Cases & Error Handling
+
+================================================================================
+1. USER REGISTRATION & AUTHENTICATION
+================================================================================
+
+TC-001: New User Registration - Happy Path
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Navigate to /users/register/
+2. Fill in all required fields:
+   - Username: testuser123
+   - First Name: Test
+   - Last Name: User
+   - Email: test@example.com
+   - Phone: +233123456789
+   - Location: Accra, East Legon
+   - Password: TestPass123
+   - Confirm Password: TestPass123
+3. Click "Register" button
+
+Expected Results:
+- Success message: "Registration successful! You can now log in."
+- Redirected to login page
+- User profile created with phone and location
+- User can login with credentials
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-002: Registration - Missing Phone Number
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Navigate to /users/register/
+2. Fill all fields EXCEPT phone number
+3. Click "Register" button
+
+Expected Results:
+- Form validation error shown
+- "This field is required" error under phone field
+- User NOT registered
+- Remains on registration page
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-003: Registration - Missing Location
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Navigate to /users/register/
+2. Fill all fields EXCEPT location
+3. Click "Register" button
+
+Expected Results:
+- Form validation error shown
+- "This field is required" error under location field
+- User NOT registered
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-004: Registration - Password Mismatch
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Navigate to /users/register/
+2. Fill all fields correctly
+3. Password: TestPass123
+4. Confirm Password: DifferentPass456
+5. Click "Register" button
+
+Expected Results:
+- Form validation error: "Passwords do not match"
+- User NOT registered
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-005: Registration - Duplicate Email
+-------------------------------------------
+Pre-conditions: User with email test@example.com exists
+Steps:
+1. Navigate to /users/register/
+2. Fill all fields with same email as existing user
+3. Click "Register" button
+
+Expected Results:
+- Form validation error: "This email is already registered"
+- User NOT registered
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-006: User Login - Valid Credentials
+-------------------------------------------
+Pre-conditions: User account exists
+Steps:
+1. Navigate to /users/login/
+2. Enter valid username and password
+3. Click "Login" button
+
+Expected Results:
+- Success message: "Welcome back, [username]!"
+- Redirected to home page
+- User shown as logged in (navbar shows user menu)
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-007: User Login - Invalid Credentials
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Navigate to /users/login/
+2. Enter invalid username/password
+3. Click "Login" button
+
+Expected Results:
+- Error message displayed
+- User NOT logged in
+- Remains on login page
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-008: User Logout
+-------------------------------------------
+Pre-conditions: User is logged in
+Steps:
+1. Click user menu in navbar
+2. Click "Logout"
+
+Expected Results:
+- Success message: "You have been logged out."
+- User logged out
+- Redirected to home page
+- Navbar shows "Login/Register" instead of user menu
+
+Priority: Medium
+Status: To Test
+
+================================================================================
+2. GUEST SHOPPING & CART MANAGEMENT
+================================================================================
+
+TC-009: Guest Can Browse Products
+-------------------------------------------
+Pre-conditions: User is NOT logged in
+Steps:
+1. Navigate to home page
+2. Browse product listings
+3. Click on a product
+
+Expected Results:
+- Guest can view all products
+- Product details page loads correctly
+- No login required for browsing
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-010: Guest Can Add Items to Cart
+-------------------------------------------
+Pre-conditions: User is NOT logged in
+Steps:
+1. Navigate to product detail page
+2. Select size and color
+3. Enter quantity
+4. Click "Add to Cart"
+
+Expected Results:
+- Success message: "Item added to cart successfully."
+- Cart icon shows item count
+- No login required
+- Redirected to cart page
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-011: Guest Cart Persists Across Pages
+-------------------------------------------
+Pre-conditions: Guest has items in cart
+Steps:
+1. Add item to cart as guest
+2. Navigate to different pages
+3. Check cart icon count
+4. View cart page
+
+Expected Results:
+- Cart count remains consistent
+- Items still in cart after navigation
+- Cart data stored in session
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-012: Guest Can Update Cart Quantities
+-------------------------------------------
+Pre-conditions: Guest has items in cart
+Steps:
+1. Go to cart page
+2. Change quantity of an item
+3. Click update button
+
+Expected Results:
+- Success message: "Cart updated successfully."
+- Quantity updated correctly
+- Total price recalculated
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-013: Guest Can Remove Items from Cart
+-------------------------------------------
+Pre-conditions: Guest has items in cart
+Steps:
+1. Go to cart page
+2. Click remove/trash icon on an item
+3. Confirm removal
+
+Expected Results:
+- Success message: "Item removed from cart."
+- Item removed from cart
+- Cart total updated
+- If last item: "Your cart is empty" message shown
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-014: Guest Cannot Checkout Without Login
+-------------------------------------------
+Pre-conditions: Guest has items in cart
+Steps:
+1. Go to cart page with items
+2. Click "Proceed to Checkout"
+
+Expected Results:
+- Redirected to login page
+- Message: "Please log in to checkout" (or similar)
+- Cart preserved
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-015: Guest Cart Merges on Login
+-------------------------------------------
+Pre-conditions: Guest has items in cart
+Steps:
+1. Add 2 items to cart as guest (Item A: 1x, Item B: 2x)
+2. Go to login page
+3. Login with existing account that has 1 item in cart (Item C: 1x)
+
+Expected Results:
+- All items merged into single cart
+- Final cart contains: Item A (1x), Item B (2x), Item C (1x)
+- Success message about login
+- Cart count shows 3 items
+- No items lost
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-016: Guest Cart Merges - Same Items
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. As guest, add Item A (2x) to cart
+2. Login with account that also has Item A (1x)
+
+Expected Results:
+- Quantities combined: Item A (3x)
+- If exceeds stock, capped at max stock
+- Success message shown
+
+Priority: High
+Status: To Test
+
+================================================================================
+3. USER SHOPPING & CART MANAGEMENT (LOGGED IN)
+================================================================================
+
+TC-017: Logged-in User Can Add to Cart
+-------------------------------------------
+Pre-conditions: User is logged in
+Steps:
+1. Navigate to product page
+2. Select variant
+3. Click "Add to Cart"
+
+Expected Results:
+- Item added to database cart
+- Cart count updated in navbar
+- Success message shown
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-018: Logged-in User Cart Persists After Logout
+-------------------------------------------
+Pre-conditions: User is logged in
+Steps:
+1. Add items to cart
+2. Logout
+3. Login again
+
+Expected Results:
+- Cart items still present
+- Cart count correct
+- Items saved in database
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-019: Cannot Add Out of Stock Items
+-------------------------------------------
+Pre-conditions: Product variant has 0 stock
+Steps:
+1. Navigate to out-of-stock product variant
+2. Try to add to cart
+
+Expected Results:
+- Error message: "This variant is out of stock."
+- Item NOT added to cart
+- Redirected appropriately
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-020: Cannot Exceed Stock Limit
+-------------------------------------------
+Pre-conditions: Product variant has stock of 5
+Steps:
+1. Add item to cart with quantity 3
+2. Try to add same item with quantity 3 again
+
+Expected Results:
+- Warning message: "Maximum stock reached. Only 5 items available."
+- Quantity capped at 5
+- Not allowed to exceed stock
+
+Priority: High
+Status: To Test
+
+================================================================================
+4. CHECKOUT & PAYMENT FLOW
+================================================================================
+
+TC-021: Checkout - User Without Profile Info
+-------------------------------------------
+Pre-conditions: User logged in, no phone/location in profile
+Steps:
+1. Add items to cart
+2. Click "Proceed to Checkout"
+
+Expected Results:
+- Redirected to profile edit page
+- Warning message: "Please update your profile with phone number and delivery location first."
+- Cannot proceed to payment
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-022: Checkout - View Delivery Information
+-------------------------------------------
+Pre-conditions: User logged in with complete profile
+Steps:
+1. Add items to cart
+2. Click "Proceed to Checkout"
+
+Expected Results:
+- Checkout page loads
+- Shows user's name, phone, and location
+- Shows order summary with items and total
+- "Proceed to Payment" button visible
+- "Update Delivery Info" link present
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-023: Checkout - Empty Cart
+-------------------------------------------
+Pre-conditions: User logged in, cart is empty
+Steps:
+1. Navigate to /checkout/ directly
+
+Expected Results:
+- Warning message: "Your cart is empty."
+- Redirected to product list
+- Cannot access checkout
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-024: Payment Initialization - Success
+-------------------------------------------
+Pre-conditions: User at checkout page with items
+Steps:
+1. Click "Proceed to Payment"
+
+Expected Results:
+- Redirected to Paystack payment page
+- Payment amount matches cart total
+- User email pre-filled
+- Cart data stored in session
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-025: Payment - Successful Payment
+-------------------------------------------
+Pre-conditions: At Paystack payment page
+Steps:
+1. Complete payment with test card
+2. Payment succeeds
+
+Expected Results:
+- Redirected to order detail page
+- Order created with status "Paid"
+- Order number generated
+- Order contains correct items
+- Stock deducted for all items
+- Cart cleared
+- Success message: "Payment successful! Order [number] has been placed."
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-026: Payment - Failed Payment
+-------------------------------------------
+Pre-conditions: At Paystack payment page
+Steps:
+1. Use test card that fails
+2. Payment fails
+
+Expected Results:
+- Error message: "Payment verification failed. Please try again."
+- Order NOT created
+- Stock NOT deducted
+- Cart still has items
+- Redirected to cart page
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-027: Payment - User Cancels Payment
+-------------------------------------------
+Pre-conditions: At Paystack payment page
+Steps:
+1. Click "Cancel" or close payment window
+2. Return to site
+
+Expected Results:
+- Order NOT created
+- Cart still has items
+- User can retry payment
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-028: Order Creation - Verify Order Details
+-------------------------------------------
+Pre-conditions: Payment completed successfully
+Steps:
+1. Complete payment
+2. View order details page
+
+Expected Results:
+Order contains:
+- Correct order number
+- Status: Paid
+- User's name
+- User's phone
+- User's location
+- All cart items with correct quantities and prices
+- Correct total price
+- Order creation timestamp
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-029: Stock Deduction After Payment
+-------------------------------------------
+Pre-conditions: Product has stock of 10
+Steps:
+1. Add 3 items to cart
+2. Complete checkout and payment
+3. Check product stock
+
+Expected Results:
+- Product stock reduced to 7
+- Stock deducted only after payment success
+- Multiple orders can't exceed available stock
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-030: Cart Cleared After Order
+-------------------------------------------
+Pre-conditions: User has items in cart
+Steps:
+1. Complete checkout and payment
+2. Check cart
+
+Expected Results:
+- Cart is empty
+- Cart count shows 0
+- "Your cart is empty" message on cart page
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-031: Direct URL Access to Payment Callback
+-------------------------------------------
+Pre-conditions: User logged in
+Steps:
+1. Navigate directly to /payments/callback/ without payment
+
+Expected Results:
+- Error message: "No transaction reference found."
+- Redirected to home page
+- No order created
+
+Priority: Medium
+Status: To Test
+
+================================================================================
+5. ORDER MANAGEMENT
+================================================================================
+
+TC-032: View Order History
+-------------------------------------------
+Pre-conditions: User has placed orders
+Steps:
+1. Login as user with orders
+2. Go to "My Orders" page
+
+Expected Results:
+- List of all user's orders displayed
+- Shows order number, date, status, total
+- Orders sorted by newest first
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-033: View Order Details
+-------------------------------------------
+Pre-conditions: User has an order
+Steps:
+1. Go to "My Orders"
+2. Click on an order
+
+Expected Results:
+- Order detail page loads
+- Shows complete order information
+- Shows all order items
+- Shows delivery information
+- Shows payment status
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-034: View Order - Different User Cannot Access
+-------------------------------------------
+Pre-conditions: User A has an order
+Steps:
+1. Login as User B
+2. Try to access User A's order URL directly
+
+Expected Results:
+- 404 error or "Order not found"
+- User B cannot see User A's order
+- Security enforced
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-035: Order Status Updates
+-------------------------------------------
+Pre-conditions: Order exists
+Steps:
+1. Admin updates order status to "Shipped"
+2. User checks order details
+
+Expected Results:
+- Order status shows "Shipped"
+- Status timestamp updated
+- (If implemented) Email notification sent
+
+Priority: Medium
+Status: To Test
+
+================================================================================
+6. EMAIL NOTIFICATIONS
+================================================================================
+
+TC-036: Order Confirmation Email Sent
+-------------------------------------------
+Pre-conditions: User completes order
+Steps:
+1. Complete checkout and payment
+2. Check email inbox
+
+Expected Results:
+Email received with:
+- Subject: "Order Confirmation - [Order Number]"
+- Order details
+- Items ordered
+- Delivery information
+- Total amount
+- Payment pending notice
+- From: kennedyakogokweku@gmail.com
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-037: Payment Confirmation Email Sent
+-------------------------------------------
+Pre-conditions: Payment successful
+Steps:
+1. Complete payment
+2. Check email inbox
+
+Expected Results:
+Email received with:
+- Subject: "Payment Confirmed - Order [Order Number]"
+- Payment reference
+- Amount paid
+- Order details
+- Items ordered
+- Delivery information
+- Order status: Paid
+- From: kennedyakogokweku@gmail.com
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-038: Email Content - Order Confirmation
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Verify order confirmation email content
+
+Expected Results:
+- HTML formatted email
+- Purple branding (MB Vogue colors)
+- All order information clearly displayed
+- Readable plain text alternative
+- No broken images/links
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-039: Email Content - Payment Confirmation
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Verify payment confirmation email content
+
+Expected Results:
+- HTML formatted email
+- Success icon/checkmark
+- Purple/green success colors
+- Payment reference clearly visible
+- Professional formatting
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-040: Email - Invalid Email Address
+-------------------------------------------
+Pre-conditions: User has invalid email
+Steps:
+1. Register with typo in email
+2. Complete order
+
+Expected Results:
+- Email sending fails gracefully
+- Order still created
+- Error logged but not shown to user
+- Application continues working
+
+Priority: Low
+Status: To Test
+
+================================================================================
+7. PROFILE MANAGEMENT
+================================================================================
+
+TC-041: View Profile
+-------------------------------------------
+Pre-conditions: User logged in
+Steps:
+1. Click user menu
+2. Click "Profile"
+
+Expected Results:
+- Profile page loads
+- Shows user information
+- Shows phone number
+- Shows delivery location
+- Shows recent orders (if any)
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-042: Edit Profile - Update Phone
+-------------------------------------------
+Pre-conditions: User logged in
+Steps:
+1. Go to profile edit page
+2. Change phone number
+3. Save changes
+
+Expected Results:
+- Success message: "Profile updated successfully."
+- Phone number updated
+- Reflected in checkout
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-043: Edit Profile - Update Location
+-------------------------------------------
+Pre-conditions: User logged in
+Steps:
+1. Go to profile edit page
+2. Change delivery location
+3. Save changes
+
+Expected Results:
+- Success message shown
+- Location updated
+- Reflected in checkout
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-044: Edit Profile - Empty Required Fields
+-------------------------------------------
+Pre-conditions: User logged in
+Steps:
+1. Go to profile edit page
+2. Clear phone or location field
+3. Try to save
+
+Expected Results:
+- Validation error shown
+- Changes NOT saved
+- User prompted to fill required fields
+
+Priority: Medium
+Status: To Test
+
+================================================================================
+8. PASSWORD RESET
+================================================================================
+
+TC-045: Password Reset - Request Reset
+-------------------------------------------
+Pre-conditions: User account exists
+Steps:
+1. Go to login page
+2. Click "Forgot Password?" link
+3. Enter registered email
+4. Submit
+
+Expected Results:
+- Success message: "Password reset email sent."
+- Email received with reset link
+- Link valid for limited time
+- From: kennedyakogokweku@gmail.com
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-046: Password Reset - Invalid Email
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Go to password reset page
+2. Enter non-existent email
+3. Submit
+
+Expected Results:
+- No error shown (security - don't reveal if email exists)
+- Success message still shown
+- No email sent
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-047: Password Reset - Complete Reset
+-------------------------------------------
+Pre-conditions: Reset email received
+Steps:
+1. Click reset link in email
+2. Enter new password
+3. Confirm new password
+4. Submit
+
+Expected Results:
+- Success message: "Password reset successful."
+- Can login with new password
+- Old password no longer works
+- Redirected to login page
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-048: Password Reset - Expired Link
+-------------------------------------------
+Pre-conditions: Reset link is expired (>24 hours old)
+Steps:
+1. Click expired reset link
+
+Expected Results:
+- Error message: "Password reset link is invalid or expired."
+- Cannot reset password
+- Must request new link
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-049: Password Reset - Password Mismatch
+-------------------------------------------
+Pre-conditions: At password reset form
+Steps:
+1. Enter new password
+2. Enter different confirmation password
+3. Submit
+
+Expected Results:
+- Validation error: "Passwords do not match"
+- Password NOT changed
+
+Priority: Medium
+Status: To Test
+
+================================================================================
+9. PRODUCT BROWSING
+================================================================================
+
+TC-050: Browse All Products
+-------------------------------------------
+Pre-conditions: Products exist in database
+Steps:
+1. Navigate to shop/products page
+
+Expected Results:
+- All available products displayed
+- Product images shown
+- Product names and prices visible
+- "View Details" button on each product
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-051: Filter Products by Category
+-------------------------------------------
+Pre-conditions: Products in multiple categories exist
+Steps:
+1. Go to products page
+2. Click on a category filter
+
+Expected Results:
+- Only products in selected category shown
+- Category name displayed
+- Product count accurate
+- Filter can be cleared
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-052: Search Products
+-------------------------------------------
+Pre-conditions: Products exist
+Steps:
+1. Enter search term in navbar search
+2. Submit search
+
+Expected Results:
+- Products matching search term displayed
+- Search in product name and description
+- "No results" message if nothing found
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-053: Sort Products - Price Low to High
+-------------------------------------------
+Pre-conditions: Products exist with different prices
+Steps:
+1. Go to products page
+2. Select "Price: Low to High" sort
+
+Expected Results:
+- Products sorted by ascending price
+- Cheapest products shown first
+- Sort persists on page refresh
+
+Priority: Low
+Status: To Test
+
+-------------------------------------------
+TC-054: Sort Products - Newest First
+-------------------------------------------
+Pre-conditions: Products with different creation dates exist
+Steps:
+1. Go to products page
+2. Select "Newest" sort
+
+Expected Results:
+- Most recently added products shown first
+- Sort order correct
+
+Priority: Low
+Status: To Test
+
+-------------------------------------------
+TC-055: View Product Details
+-------------------------------------------
+Pre-conditions: Product exists
+Steps:
+1. Click on a product
+
+Expected Results:
+- Product detail page loads
+- Shows product name, description, price
+- Shows available variants (sizes/colors)
+- Shows product images
+- "Add to Cart" button visible
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-056: Product Details - Select Variant
+-------------------------------------------
+Pre-conditions: On product detail page
+Steps:
+1. Select different size
+2. Select different color
+3. Check availability
+
+Expected Results:
+- Variant changes when selections change
+- Stock availability shown
+- Price updates if variant has different price
+- Out of stock variants disabled
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-057: Product Images - Image Gallery
+-------------------------------------------
+Pre-conditions: Product has multiple images
+Steps:
+1. View product with multiple images
+2. Click on thumbnail images
+
+Expected Results:
+- Main image changes when thumbnail clicked
+- Thumbnails highlighted when active
+- Image gallery works smoothly
+
+Priority: Low
+Status: To Test
+
+================================================================================
+10. UI/UX & THEME TESTING
+================================================================================
+
+TC-058: Purple Theme Applied - Homepage
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Navigate to homepage
+2. Inspect colors
+
+Expected Results:
+- Primary colors are purple shades
+- Navbar: Dark purple (#310055)
+- Buttons: Purple (#681BA5)
+- Links: Purple
+- No blue colors visible
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-059: Purple Theme - All Pages
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Navigate through all pages
+2. Check color consistency
+
+Expected Results:
+- Purple theme consistent across:
+  - Homepage
+  - Product list
+  - Product detail
+  - Cart
+  - Checkout
+  - Profile
+  - Login/Register
+  - Admin panel
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-060: Purple Theme - Admin Panel
+-------------------------------------------
+Pre-conditions: Admin user logged in
+Steps:
+1. Access admin panel
+2. Check theme colors
+
+Expected Results:
+- Admin sidebar: Purple gradient
+- Primary buttons: Purple
+- Active menu items: Purple highlight
+- Dashboard cards: Purple accents
+
+Priority: Low
+Status: To Test
+
+-------------------------------------------
+TC-061: Mobile Responsiveness - Navbar
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Open site on mobile viewport (375px width)
+2. Check navbar
+
+Expected Results:
+- Hamburger menu appears
+- Menu items hidden until clicked
+- Cart icon visible
+- Search functional
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-062: Mobile Responsiveness - Product Grid
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. View products page on mobile
+
+Expected Results:
+- Products display in single column
+- Images scale correctly
+- Text readable
+- Buttons accessible
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-063: Mobile Responsiveness - Checkout
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Go through checkout on mobile device
+
+Expected Results:
+- Checkout page mobile-friendly
+- Forms easy to fill
+- Buttons large enough
+- Payment button accessible
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-064: Cart Badge Count - Updates
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Add item to cart
+2. Check navbar cart icon
+3. Add another item
+4. Check again
+
+Expected Results:
+- Badge shows correct item count
+- Updates immediately after adding items
+- Shows for both guests and logged-in users
+- Count persists across pages
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-065: Loading States
+-------------------------------------------
+Pre-conditions: Slow network simulated
+Steps:
+1. Add item to cart
+2. Submit payment
+3. Observe loading indicators
+
+Expected Results:
+- Loading indicators shown during operations
+- Buttons disabled during submission
+- User can't double-submit
+- Clear feedback provided
+
+Priority: Low
+Status: To Test
+
+-------------------------------------------
+TC-066: Error Messages - User Friendly
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Trigger various error conditions
+2. Read error messages
+
+Expected Results:
+- Error messages clear and helpful
+- No technical jargon
+- Suggests how to fix issue
+- Appropriate error styling (color, icon)
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-067: Success Messages - Visibility
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Perform successful actions (add to cart, login, etc.)
+2. Check for feedback
+
+Expected Results:
+- Success messages appear at top of page
+- Green/purple success styling
+- Auto-dismiss after few seconds
+- Can be manually dismissed
+
+Priority: Low
+Status: To Test
+
+================================================================================
+11. SECURITY TESTING
+================================================================================
+
+TC-068: SQL Injection Prevention
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Try SQL injection in search: ' OR '1'='1
+2. Try in login form
+3. Try in registration
+
+Expected Results:
+- Input sanitized
+- No SQL errors
+- No unauthorized access
+- Application handles safely
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-069: XSS Prevention
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Try entering <script>alert('XSS')</script> in:
+   - Username
+   - Product search
+   - Location field
+   - Notes field
+
+Expected Results:
+- Script tags escaped
+- Script does not execute
+- Safe rendering in HTML
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-070: CSRF Protection
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Inspect forms for CSRF token
+2. Try submitting form without token
+
+Expected Results:
+- All POST forms have {% csrf_token %}
+- Submission without token rejected
+- CSRF middleware active
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-071: Unauthorized Access - Admin Panel
+-------------------------------------------
+Pre-conditions: Non-admin user logged in
+Steps:
+1. Try to access /admin-panel/ URL directly
+
+Expected Results:
+- Access denied
+- Redirected to login or home
+- Error message shown
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-072: Unauthorized Access - Other User's Orders
+-------------------------------------------
+Pre-conditions: Two users with orders
+Steps:
+1. Login as User A
+2. Try to access User B's order URL
+
+Expected Results:
+- 404 or access denied
+- Cannot view other user's orders
+- Security enforced
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-073: Password Security - Hashing
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Register new user
+2. Check database for password storage
+
+Expected Results:
+- Password NOT stored in plain text
+- Password hashed using secure algorithm
+- Different hashes for same password
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-074: Session Security
+-------------------------------------------
+Pre-conditions: User logged in
+Steps:
+1. Login on browser A
+2. Copy session cookie
+3. Try using cookie on browser B
+
+Expected Results:
+- Session properly managed
+- Logout invalidates session
+- Session expires after timeout
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-075: Email Credentials Not Exposed
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Check if .env file is in .gitignore
+2. Inspect page source
+3. Check JavaScript files
+
+Expected Results:
+- .env not committed to git
+- Email credentials not in source code
+- API keys not exposed in client side
+
+Priority: Critical
+Status: To Test
+
+-------------------------------------------
+TC-076: Payment Security - No Amount Manipulation
+-------------------------------------------
+Pre-conditions: At checkout
+Steps:
+1. Inspect network requests
+2. Try to modify payment amount
+
+Expected Results:
+- Amount verified server-side
+- Cannot manipulate payment amount
+- Server calculates total, not client
+
+Priority: Critical
+Status: To Test
+
+================================================================================
+12. EDGE CASES & ERROR HANDLING
+================================================================================
+
+TC-077: Concurrent Orders - Stock Management
+-------------------------------------------
+Pre-conditions: Product has stock of 5
+Steps:
+1. User A adds 3 to cart
+2. User B adds 3 to cart
+3. User A completes payment
+4. User B tries to complete payment
+
+Expected Results:
+- First payment succeeds (User A)
+- Second payment: Only 2 items available
+- Stock properly managed
+- User B notified of stock limitation
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-078: Payment Timeout
+-------------------------------------------
+Pre-conditions: At Paystack payment page
+Steps:
+1. Initiate payment
+2. Wait for session timeout
+3. Try to complete payment
+
+Expected Results:
+- Timeout handled gracefully
+- User can retry
+- Cart preserved
+- Clear error message
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-079: Network Error During Payment
+-------------------------------------------
+Pre-conditions: Simulated network error
+Steps:
+1. Start payment process
+2. Disconnect network
+3. Try to complete payment
+
+Expected Results:
+- Error message: "Network error..."
+- Order NOT created
+- User can retry
+- No duplicate orders
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-080: Special Characters in Input
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Enter special characters in:
+   - Username: test@user#123
+   - Location: Accra, O'Reilly Street
+   - Phone: +233 (0) 123-456-789
+
+Expected Results:
+- Valid special chars accepted
+- Properly escaped/sanitized
+- Saved correctly
+- Displayed correctly
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-081: Very Long Input Values
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Enter very long text in:
+   - Location (1000 characters)
+   - Username (500 characters)
+
+Expected Results:
+- Form validation limits length
+- Error message shown if too long
+- Database constraints enforced
+
+Priority: Low
+Status: To Test
+
+-------------------------------------------
+TC-082: Browser Back Button - After Payment
+-------------------------------------------
+Pre-conditions: Payment completed
+Steps:
+1. Complete payment successfully
+2. Press browser back button
+
+Expected Results:
+- Cannot re-submit payment
+- Proper navigation
+- No duplicate orders
+- User redirected appropriately
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-083: Multiple Browser Tabs - Cart Sync
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Open site in two tabs
+2. Add item in Tab 1
+3. Check Tab 2
+
+Expected Results:
+- Cart syncs between tabs (for logged-in users)
+- Session cart consistent
+- No conflicts
+
+Priority: Low
+Status: To Test
+
+-------------------------------------------
+TC-084: Expired Session - Guest Cart
+-------------------------------------------
+Pre-conditions: Guest with items in cart
+Steps:
+1. Add items to cart as guest
+2. Wait for session to expire (or clear cookies)
+3. Refresh page
+
+Expected Results:
+- Cart cleared
+- User notified (if applicable)
+- Can start fresh
+
+Priority: Low
+Status: To Test
+
+-------------------------------------------
+TC-085: Invalid Product URL
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Navigate to /product/invalid-slug/
+
+Expected Results:
+- 404 error page shown
+- User-friendly message
+- Link to return to products
+
+Priority: Low
+Status: To Test
+
+-------------------------------------------
+TC-086: Empty Search Query
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Submit search with empty text
+
+Expected Results:
+- Shows all products (or shows no results)
+- No errors
+- Handles gracefully
+
+Priority: Low
+Status: To Test
+
+-------------------------------------------
+TC-087: Price Set to 1 Cedi - All Products
+-------------------------------------------
+Pre-conditions: Management command run
+Steps:
+1. Browse all products
+2. Check prices
+
+Expected Results:
+- All products show GH₵1.00
+- Variants also GH₵1.00 (if no override)
+- Cart totals calculated correctly
+
+Priority: High
+Status: To Test
+
+-------------------------------------------
+TC-088: Invalid Payment Reference
+-------------------------------------------
+Pre-conditions: None
+Steps:
+1. Navigate to /payments/verify/INVALID123/
+
+Expected Results:
+- Error message: "Invalid payment reference"
+- Redirected appropriately
+- No order created
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-089: Deleted Product in Cart
+-------------------------------------------
+Pre-conditions: Product in cart gets deleted by admin
+Steps:
+1. Add product to cart
+2. Admin deletes product
+3. Try to checkout
+
+Expected Results:
+- Error shown for deleted item
+- User can remove it from cart
+- Other items processable
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-090: Profile Without Location - Old Users
+-------------------------------------------
+Pre-conditions: Existing user without phone/location
+Steps:
+1. Login as old user
+2. Try to checkout
+
+Expected Results:
+- Redirected to profile edit
+- Message: "Please update your profile..."
+- Cannot checkout until updated
+
+Priority: High
+Status: To Test
+
+================================================================================
+ADDITIONAL TEST CATEGORIES
+================================================================================
+
+TC-091: Performance - Page Load Times
+-------------------------------------------
+Expected Results:
+- Homepage loads < 3 seconds
+- Product pages load < 2 seconds
+- Cart operations instant
+- Payment redirect < 2 seconds
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-092: Browser Compatibility
+-------------------------------------------
+Test on:
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+- Mobile browsers
+
+Expected Results:
+- All features work on all browsers
+- Consistent appearance
+- No JavaScript errors
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-093: Accessibility - Screen Reader
+-------------------------------------------
+Steps:
+1. Use screen reader to navigate site
+
+Expected Results:
+- All interactive elements labeled
+- Proper heading hierarchy
+- Alt text on images
+- ARIA labels where needed
+
+Priority: Low
+Status: To Test
+
+-------------------------------------------
+TC-094: Data Validation - Phone Number Format
+-------------------------------------------
+Test various phone formats:
+- +233123456789
+- 0123456789
+- +233 (0) 123-456-789
+
+Expected Results:
+- Valid formats accepted
+- Invalid formats rejected
+- Clear error messages
+
+Priority: Medium
+Status: To Test
+
+-------------------------------------------
+TC-095: Integration - Paystack Test Cards
+-------------------------------------------
+Test with Paystack test cards:
+- Success: 4084084084084081
+- Declined: 4084080000000408
+- Invalid PIN: 5060660000000064
+
+Expected Results:
+- Success card: Order created
+- Declined: Error message, no order
+- Invalid: Proper error handling
+
+Priority: Critical
+Status: To Test
+
+================================================================================
+TEST EXECUTION PRIORITY
+================================================================================
+
+CRITICAL (Must pass before release):
+- TC-001, TC-006, TC-010, TC-015, TC-017
+- TC-021, TC-022, TC-024, TC-025, TC-026
+- TC-028, TC-029, TC-068, TC-069, TC-070
+- TC-071, TC-072, TC-073, TC-075, TC-076
+- TC-095
+
+HIGH (Should pass before release):
+- TC-002, TC-003, TC-004, TC-005, TC-007
+- TC-009, TC-011, TC-012, TC-013, TC-014
+- TC-016, TC-018, TC-019, TC-020, TC-023
+- TC-027, TC-030, TC-032, TC-033, TC-034
+- TC-036, TC-037, TC-042, TC-043, TC-045
+- TC-047, TC-050, TC-055, TC-063, TC-074
+- TC-077, TC-087, TC-090
+
+MEDIUM (Important but not blocking):
+All other test cases
+
+================================================================================
+TEST DATA REQUIREMENTS
+================================================================================
+
+Test Users:
+1. Admin User
+   - Username: admin
+   - Email: admin@mbvogue.com
+   - Has admin privileges
+
+2. Regular User 1
+   - Username: testuser1
+   - Email: test1@example.com
+   - Phone: +233123456789
+   - Location: Accra, East Legon
+   - Has existing orders
+
+3. Regular User 2
+   - Username: testuser2
+   - Email: test2@example.com
+   - Phone: +233987654321
+   - Location: Kumasi, Adum
+
+4. User Without Profile
+   - Username: olduser
+   - Email: old@example.com
+   - No phone/location in profile
+
+Test Products:
+1. Product with high stock (50+ items)
+2. Product with low stock (2-3 items)
+3. Product with 0 stock
+4. Product with multiple variants (sizes/colors)
+5. Product with images
+6. Product without images
+
+Test Payments:
+- Use Paystack test keys
+- Use test cards provided by Paystack
+- Test in test mode, not live mode
+
+================================================================================
+SIGN-OFF
+================================================================================
+
+Test Environment: _________________________
+Tester Name: _________________________
+Date: _________________________
+
+Test Results Summary:
+- Total Tests: 95
+- Passed: ___
+- Failed: ___
+- Blocked: ___
+- Not Tested: ___
+
+Critical Issues Found: _________________________
+_________________________________________________
+_________________________________________________
+
+Sign-off: _________________________
+
+================================================================================
+END OF TEST CASES
+================================================================================
