@@ -16,6 +16,15 @@ def register(request):
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])
             user.save()
+
+            # Create user profile with phone and location
+            from users.models import UserProfile
+            UserProfile.objects.create(
+                user=user,
+                phone=form.cleaned_data['phone'],
+                address=form.cleaned_data['location']
+            )
+
             messages.success(request, 'Registration successful! You can now log in.')
             return redirect('users:login')
     else:

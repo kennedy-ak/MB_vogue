@@ -18,14 +18,18 @@ def generate_reference():
 
 
 @login_required
-def initialize_payment(request, order_id):
-    """Initialize Paystack payment for an order"""
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+def initialize_payment(request):
+    """Initialize Paystack payment"""
+    # Get pending order data from session
+    pending_order = request.session.get('pending_order')
+    if not pending_order:
+        messages.error(request, 'No pending order found. Please try again.')
+        return redirect('core:cart_detail')
 
-    # Check if payment already exists and is successful
-    if hasattr(order, 'payment') and order.payment.is_successful():
-        messages.info(request, 'Payment for this order has already been completed.')
-        return redirect('core:order_detail', order_number=order.order_number)
+    # Check if user has profile
+    if not hasattr(request.user, 'profile'):
+        messages.error(request, 'Please update your profile first.')
+        return redirect('users:profile_edit')
 
     # Generate a unique reference
     reference = generate_reference()
@@ -33,22 +37,23 @@ def initialize_payment(request, order_id):
         reference = generate_reference()
 
     # Calculate amount in kobo (Paystack uses lowest currency unit)
-    amount_kobo = int(order.total_price * 100)
+    from decimal import Decimal
+    total_price = Decimal(pending_order['total_price'])
+    amount_kobo = int(total_price * 100)
 
     # Prepare Paystack request data
     paystack_data = {
-        'email': order.email,
+        'email': request.user.email,
         'amount': amount_kobo,
         'reference': reference,
         'callback_url': request.build_absolute_uri('/payments/callback/'),
         'metadata': {
-            'order_id': order.id,
-            'order_number': order.order_number,
+            'user_id': request.user.id,
             'custom_fields': [
                 {
-                    'display_name': 'Order Number',
-                    'variable_name': 'order_number',
-                    'value': order.order_number
+                    'display_name': 'Customer Name',
+                    'variable_name': 'customer_name',
+                    'value': request.user.get_full_name() or request.user.username
                 }
             ]
         }
@@ -69,34 +74,29 @@ def initialize_payment(request, order_id):
         response_data = response.json()
 
         if response_data.get('status'):
-            # Create payment record
-            payment = Payment.objects.create(
-                order=order,
-                amount=order.total_price,
-                reference=reference,
-                access_code=response_data['data']['access_code'],
-                response_data=response_data
-            )
+            # Store payment reference in session
+            request.session['payment_reference'] = reference
+            request.session['payment_amount'] = str(total_price)
 
             # Redirect to Paystack payment page
             return redirect(response_data['data']['authorization_url'])
         else:
             messages.error(request, f"Payment initialization failed: {response_data.get('message', 'Unknown error')}")
-            return redirect('core:order_detail', order_number=order.order_number)
+            return redirect('core:cart_detail')
 
     except requests.exceptions.RequestException as e:
         messages.error(request, f"Network error: {str(e)}")
-        return redirect('core:order_detail', order_number=order.order_number)
+        return redirect('core:cart_detail')
 
 
 @login_required
 def verify_payment(request, reference):
-    """Verify payment with Paystack (server-side)"""
-    payment = get_object_or_404(Payment, reference=reference)
-
-    if payment.is_successful():
-        messages.info(request, 'Payment has already been verified.')
-        return redirect('core:order_detail', order_number=payment.order.order_number)
+    """Verify payment with Paystack and create order"""
+    # Get pending order from session
+    pending_order = request.session.get('pending_order')
+    if not pending_order:
+        messages.error(request, 'No pending order found.')
+        return redirect('core:home')
 
     # Make request to Paystack to verify transaction
     headers = {
@@ -112,43 +112,77 @@ def verify_payment(request, reference):
         response_data = response.json()
 
         if response_data.get('status') and response_data['data']['status'] == 'success':
-            # Update payment record
-            payment.status = 'success'
-            payment.paystack_transaction_id = response_data['data']['id']
-            payment.authorization_code = response_data['data'].get('authorization', {}).get('authorization_code')
-            payment.response_data = response_data
-            payment.verified_at = timezone.now()
-            payment.save()
+            from decimal import Decimal
+            from core.models import ProductVariant, OrderItem
+            from core.cart_utils import CartHandler
 
-            # Update order status
-            order = payment.order
-            order.status = 'paid'
-            order.save()
+            # Create the order NOW (after payment is confirmed)
+            profile = request.user.profile
+            order = Order.objects.create(
+                user=request.user,
+                total_price=Decimal(pending_order['total_price']),
+                full_name=request.user.get_full_name() or request.user.username,
+                email=request.user.email,
+                phone=profile.phone,
+                address=profile.address,  # This will be the location
+                city='',  # Not needed
+                state='',  # Not needed
+                postal_code='',  # Not needed
+                country='Ghana',
+                status='paid'  # Set to paid immediately
+            )
 
-            # Update stock
-            for item in order.items.all():
-                if item.variant:
-                    item.variant.stock -= item.quantity
-                    item.variant.save()
+            # Create order items
+            for item_data in pending_order['cart_items']:
+                variant = ProductVariant.objects.get(id=item_data['variant_id'])
+                OrderItem.objects.create(
+                    order=order,
+                    variant=variant,
+                    price=Decimal(item_data['price']),
+                    quantity=item_data['quantity']
+                )
 
-            # Send payment confirmation email
+                # Update stock
+                variant.stock -= item_data['quantity']
+                variant.save()
+
+            # Create payment record
+            payment = Payment.objects.create(
+                order=order,
+                amount=order.total_price,
+                reference=reference,
+                status='success',
+                paystack_transaction_id=response_data['data']['id'],
+                authorization_code=response_data['data'].get('authorization', {}).get('authorization_code'),
+                response_data=response_data,
+                verified_at=timezone.now()
+            )
+
+            # Clear cart
+            cart_handler = CartHandler(request)
+            cart_handler.clear()
+
+            # Clear session data
+            del request.session['pending_order']
+            if 'payment_reference' in request.session:
+                del request.session['payment_reference']
+
+            # Send emails
+            send_order_confirmation_email(order)
             send_payment_confirmation_email(order, payment)
 
-            messages.success(request, 'Payment verified successfully!')
+            messages.success(request, f'Payment successful! Order {order.order_number} has been placed.')
+            return redirect('core:order_detail', order_number=order.order_number)
         else:
-            payment.status = 'failed'
-            payment.response_data = response_data
-            payment.save()
-
-            payment.order.status = 'pending'
-            payment.order.save()
-
-            messages.error(request, "Payment verification failed.")
+            messages.error(request, "Payment verification failed. Please try again.")
+            return redirect('core:cart_detail')
 
     except requests.exceptions.RequestException as e:
         messages.error(request, f"Network error during verification: {str(e)}")
-
-    return redirect('core:order_detail', order_number=payment.order.order_number)
+        return redirect('core:cart_detail')
+    except Exception as e:
+        messages.error(request, f"Error creating order: {str(e)}")
+        return redirect('core:cart_detail')
 
 
 @login_required

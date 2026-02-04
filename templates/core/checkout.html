@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load widget_tweaks %}
 
 {% block title %}Checkout - MB Vogue{% endblock %}
 
@@ -11,88 +10,88 @@
         <div class="col-md-8">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">Shipping Information</h5>
+                    <h5 class="mb-0"><i class="bi bi-truck"></i> Delivery Information</h5>
                 </div>
                 <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Full Name *</label>
-                                {% render_field form.full_name class="form-control" %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Email *</label>
-                                {% render_field form.email class="form-control" %}
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Phone *</label>
-                            {% render_field form.phone class="form-control" %}
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Address *</label>
-                            {% render_field form.address class="form-control" %}
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">City *</label>
-                                {% render_field form.city class="form-control" %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">State *</label>
-                                {% render_field form.state class="form-control" %}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Postal Code *</label>
-                                {% render_field form.postal_code class="form-control" %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Country *</label>
-                                {% render_field form.country class="form-control" %}
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Notes (Optional)</label>
-                            {% render_field form.notes class="form-control" %}
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-credit-card"></i> Place Order
-                        </button>
-                    </form>
+                    <div class="mb-3">
+                        <label class="text-muted small">Name</label>
+                        <p class="mb-0"><strong>{{ user.get_full_name|default:user.username }}</strong></p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small">Phone Number</label>
+                        <p class="mb-0"><strong>{{ user_profile.phone }}</strong></p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small">Delivery Location</label>
+                        <p class="mb-0"><strong>{{ user_profile.address }}</strong></p>
+                    </div>
+                    <hr>
+                    <a href="{% url 'users:profile_edit' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-pencil"></i> Update Delivery Info
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Order Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-shield-check"></i> Your order will be created after successful payment.
+                    </div>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Secure payment via Paystack</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Free delivery</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Email confirmation after payment</li>
+                    </ul>
                 </div>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">Order Summary</h5>
                 </div>
                 <div class="card-body">
-                    <h6>Items in your cart:</h6>
+                    <h6 class="mb-3">Items in your cart:</h6>
                     {% for item in cart_items %}
                     <div class="d-flex justify-content-between mb-2">
-                        <span>{{ item.quantity }}x {{ item.variant.product.name }}</span>
-                        <span>GH₵{{ item.get_total_price }}</span>
+                        <div>
+                            <div class="fw-bold">{{ item.variant.product.name if item.variant else item.variant.product.name }}</div>
+                            <small class="text-muted">Qty: {{ item.quantity }}</small>
+                        </div>
+                        <span>
+                            {% if user.is_authenticated %}
+                                GH₵{{ item.get_total_price }}
+                            {% else %}
+                                GH₵{{ item.total_price }}
+                            {% endif %}
+                        </span>
                     </div>
                     {% endfor %}
                     <hr>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Subtotal:</span>
-                        <span>GH₵{{ cart.get_total_price }}</span>
+                        <span>GH₵{{ total_price }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Shipping:</span>
-                        <span>GH₵0.00</span>
+                        <span class="text-success">FREE</span>
                     </div>
                     <hr>
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between mb-4">
                         <strong>Total:</strong>
-                        <strong>GH₵{{ cart.get_total_price }}</strong>
+                        <strong class="text-primary fs-4">GH₵{{ total_price }}</strong>
                     </div>
+
+                    <a href="{% url 'payments:initialize_payment' %}" class="btn btn-primary btn-lg w-100 mb-2">
+                        <i class="bi bi-credit-card"></i> Proceed to Payment
+                    </a>
+                    <a href="{% url 'core:cart_detail' %}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrow-left"></i> Back to Cart
+                    </a>
                 </div>
             </div>
         </div>

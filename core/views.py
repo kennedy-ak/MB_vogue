@@ -189,70 +189,39 @@ def cart_remove(request, item_id):
 
 @login_required
 def checkout(request):
-    cart = get_object_or_404(Cart, user=request.user)
-    cart_items = cart.items.select_related('variant__product').all()
+    # Check if user has profile with required info
+    if not hasattr(request.user, 'profile') or not request.user.profile.phone:
+        messages.warning(request, 'Please update your profile with phone number and delivery location first.')
+        return redirect('users:profile_edit')
 
-    if not cart_items:
+    # Get cart using CartHandler for consistency
+    cart_handler = CartHandler(request)
+    cart_items = cart_handler.get_items()
+    total_price = cart_handler.get_total_price()
+    total_items = cart_handler.get_total_items()
+
+    if total_items == 0:
         messages.warning(request, 'Your cart is empty.')
         return redirect('core:product_list')
 
-    if request.method == 'POST':
-        form = CheckoutForm(request.POST)
-        if form.is_valid():
-            # Create order
-            order = Order.objects.create(
-                user=request.user,
-                total_price=cart.get_total_price(),
-                full_name=form.cleaned_data['full_name'],
-                email=form.cleaned_data['email'],
-                phone=form.cleaned_data['phone'],
-                address=form.cleaned_data['address'],
-                city=form.cleaned_data['city'],
-                state=form.cleaned_data['state'],
-                postal_code=form.cleaned_data['postal_code'],
-                country=form.cleaned_data['country'],
-                notes=form.cleaned_data.get('notes', '')
-            )
-
-            # Create order items
-            for item in cart_items:
-                OrderItem.objects.create(
-                    order=order,
-                    variant=item.variant,
-                    price=item.variant.get_price(),
-                    quantity=item.quantity
-                )
-
-            # Clear cart
-            cart_items.delete()
-
-            # Send order confirmation email
-            send_order_confirmation_email(order)
-
-            # Redirect to payment initialization
-            messages.success(request, f'Order {order.order_number} created. Please complete payment.')
-            return redirect('payments:initialize_payment', order_id=order.id)
-    else:
-        # Pre-fill form with user profile data if available
-        initial_data = {}
-        if hasattr(request.user, 'profile'):
-            profile = request.user.profile
-            initial_data = {
-                'full_name': f'{request.user.first_name} {request.user.last_name}'.strip(),
-                'email': request.user.email,
-                'phone': profile.phone,
-                'address': profile.address,
-                'city': profile.city,
-                'state': profile.state,
-                'postal_code': profile.postal_code,
-                'country': profile.country,
+    # Store cart data in session for order creation after payment
+    request.session['pending_order'] = {
+        'cart_items': [
+            {
+                'variant_id': item.variant.id if hasattr(item, 'variant') else item['variant'].id,
+                'quantity': item.quantity,
+                'price': str(item.variant.get_price() if hasattr(item, 'variant') else item['variant'].get_price())
             }
-        form = CheckoutForm(initial=initial_data)
+            for item in cart_items
+        ],
+        'total_price': str(total_price),
+    }
 
     context = {
-        'cart': cart,
         'cart_items': cart_items,
-        'form': form,
+        'total_price': total_price,
+        'total_items': total_items,
+        'user_profile': request.user.profile,
     }
     return render(request, 'core/checkout.html', context)
 

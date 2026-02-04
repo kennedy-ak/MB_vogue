@@ -22,6 +22,20 @@ class UserRegistrationForm(forms.ModelForm):
             'placeholder': 'Email Address'
         })
     )
+    phone = forms.CharField(
+        max_length=20,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Phone Number'
+        })
+    )
+    location = forms.CharField(
+        max_length=255,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Delivery Location (e.g., Accra, East Legon)'
+        })
+    )
 
     class Meta:
         model = User
