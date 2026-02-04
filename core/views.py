@@ -5,6 +5,8 @@ from django.db.models import Q, Count, Sum
 from django.utils import timezone
 from .models import Category, Product, ProductVariant, Cart, CartItem, Order, OrderItem, Wishlist, WishlistItem
 from .forms import AddToCartForm, CheckoutForm
+from .cart_utils import CartHandler
+from .emails import send_order_confirmation_email
 
 
 def home(request):
@@ -97,19 +99,20 @@ def product_detail(request, slug):
     return render(request, 'core/product_detail.html', context)
 
 
-@login_required
 def cart_detail(request):
-    cart, created = Cart.objects.get_or_create(user=request.user)
-    cart_items = cart.items.select_related('variant__product').all()
+    cart_handler = CartHandler(request)
+    cart_items = cart_handler.get_items()
+    total_price = cart_handler.get_total_price()
+    total_items = cart_handler.get_total_items()
 
     context = {
-        'cart': cart,
         'cart_items': cart_items,
+        'total_price': total_price,
+        'total_items': total_items,
     }
     return render(request, 'core/cart.html', context)
 
 
-@login_required
 def cart_add(request, variant_id=None):
     # Handle POST request with variant_id from form data
     if request.method == 'POST':
@@ -119,72 +122,68 @@ def cart_add(request, variant_id=None):
         messages.error(request, 'Please select a product variant.')
         return redirect('core:product_list')
 
-    variant = get_object_or_404(ProductVariant, id=variant_id)
+    try:
+        variant = ProductVariant.objects.get(id=variant_id)
+    except ProductVariant.DoesNotExist:
+        messages.error(request, 'Product variant not found.')
+        return redirect('core:product_list')
 
-    if not variant.is_available():
-        messages.error(request, 'This variant is out of stock.')
-        return redirect('core:product_detail', slug=variant.product.slug)
-
-    cart, created = Cart.objects.get_or_create(user=request.user)
-    cart_item, created = CartItem.objects.get_or_create(
-        cart=cart,
-        variant=variant
-    )
+    cart_handler = CartHandler(request)
 
     if request.method == 'POST':
         quantity = request.POST.get('quantity', 1)
         try:
             quantity = int(quantity)
             if quantity > 0:
-                cart_item.quantity = quantity
-                cart_item.save()
-                messages.success(request, f'{quantity} item(s) added to cart.')
+                success, message = cart_handler.add(variant_id, quantity, override=True)
+                if success:
+                    messages.success(request, f'{quantity} item(s) added to cart.')
+                else:
+                    messages.warning(request, message)
                 return redirect('core:cart_detail')
         except ValueError:
-            pass
+            messages.error(request, 'Invalid quantity.')
+            return redirect('core:product_detail', slug=variant.product.slug)
 
-    if not created:
-        if cart_item.quantity < variant.stock:
-            cart_item.quantity += 1
-            cart_item.save()
-            messages.success(request, 'Cart updated successfully.')
-        else:
-            messages.error(request, 'Maximum stock reached for this item.')
+    # GET request - add 1 item
+    success, message = cart_handler.add(variant_id, 1)
+    if success:
+        messages.success(request, message)
     else:
-        cart_item.quantity = 1
-        cart_item.save()
-        messages.success(request, 'Item added to cart.')
+        messages.warning(request, message)
 
     return redirect('core:cart_detail')
 
 
-@login_required
 def cart_update(request, item_id):
-    cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    if request.method != 'POST':
+        return redirect('core:cart_detail')
+
     quantity = request.POST.get('quantity')
+    cart_handler = CartHandler(request)
 
     try:
         quantity = int(quantity)
-        if quantity > 0 and quantity <= cart_item.variant.stock:
-            cart_item.quantity = quantity
-            cart_item.save()
-            messages.success(request, 'Cart updated successfully.')
-        elif quantity > cart_item.variant.stock:
-            messages.error(request, f'Only {cart_item.variant.stock} items available.')
+        # item_id is actually variant_id in our session-based system
+        success, message = cart_handler.update(item_id, quantity)
+        if success:
+            messages.success(request, message)
         else:
-            cart_item.delete()
-            messages.success(request, 'Item removed from cart.')
+            messages.error(request, message)
     except ValueError:
         messages.error(request, 'Invalid quantity.')
 
     return redirect('core:cart_detail')
 
 
-@login_required
 def cart_remove(request, item_id):
-    cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
-    cart_item.delete()
-    messages.success(request, 'Item removed from cart.')
+    cart_handler = CartHandler(request)
+    # item_id is actually variant_id in our session-based system
+    success, message = cart_handler.remove(item_id)
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
     return redirect('core:cart_detail')
 
 
@@ -226,6 +225,9 @@ def checkout(request):
 
             # Clear cart
             cart_items.delete()
+
+            # Send order confirmation email
+            send_order_confirmation_email(order)
 
             # Redirect to payment initialization
             messages.success(request, f'Order {order.order_number} created. Please complete payment.')

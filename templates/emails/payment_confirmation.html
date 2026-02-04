@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #310055 0%, #681BA5 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .content {
+            background: #f8f9fa;
+            padding: 30px;
+            border: 1px solid #dee2e6;
+        }
+        .payment-info {
+            background: #d1e7dd;
+            border: 1px solid #0f5132;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .order-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .order-items {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .item {
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .item:last-child {
+            border-bottom: none;
+        }
+        .total {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #681BA5;
+            text-align: right;
+            padding-top: 15px;
+            border-top: 2px solid #681BA5;
+        }
+        .footer {
+            background: #310055;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 0 0 8px 8px;
+            font-size: 0.9em;
+        }
+        .highlight {
+            color: #681BA5;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="success-icon">✓</div>
+        <h1>Payment Confirmed!</h1>
+        <p>Your payment has been successfully received</p>
+    </div>
+
+    <div class="content">
+        <div class="payment-info">
+            <h2 style="color: #0f5132; margin-top: 0;">Payment Successful</h2>
+            <p><strong>Amount Paid:</strong> <span class="highlight">GH₵{{ payment.amount }}</span></p>
+            <p><strong>Payment Reference:</strong> {{ payment.reference }}</p>
+            <p><strong>Date:</strong> {{ payment.verified_at|date:"F d, Y H:i" }}</p>
+        </div>
+
+        <div class="order-info">
+            <h2>Order Details</h2>
+            <p><strong>Order Number:</strong> {{ order.order_number }}</p>
+            <p><strong>Order Status:</strong> {{ order.get_status_display }}</p>
+        </div>
+
+        <div class="order-items">
+            <h3>Items Ordered</h3>
+            {% for item in order_items %}
+            <div class="item">
+                <p><strong>{{ item.variant.product.name }}</strong></p>
+                <p>{{ item.variant.get_color_display }} - {{ item.variant.get_size_display }}</p>
+                <p>Quantity: {{ item.quantity }} × GH₵{{ item.price }} = <strong>GH₵{{ item.get_total_price }}</strong></p>
+            </div>
+            {% endfor %}
+            <div class="total">
+                Total Paid: GH₵{{ order.total_price }}
+            </div>
+        </div>
+
+        <div class="order-info">
+            <h3>Shipping Address</h3>
+            <p>{{ order.full_name }}</p>
+            <p>{{ order.address }}</p>
+            <p>{{ order.city }}, {{ order.state }} {{ order.postal_code }}</p>
+            <p>{{ order.country }}</p>
+            <p><strong>Phone:</strong> {{ order.phone }}</p>
+        </div>
+
+        <div style="text-align: center; padding: 20px;">
+            <p style="font-size: 1.1em;"><strong>Your order is now being processed!</strong></p>
+            <p>We will notify you when your order has been shipped.</p>
+            <p>You can track your order status in your account dashboard.</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; {% now "Y" %} MB Vogue. All rights reserved.</p>
+        <p>Your destination for fashion and style.</p>
+        <p style="margin-top: 15px;">
+            <small>If you have any questions, please contact us at {{ DEFAULT_FROM_EMAIL }}</small>
+        </p>
+    </div>
+</body>
+</html>

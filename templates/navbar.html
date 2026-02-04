@@ -67,9 +67,9 @@
                 <li class="nav-item">
                     <a class="nav-link position-relative" href="{% url 'core:cart_detail' %}">
                         <i class="bi bi-cart3"></i>
-                        {% if user.is_authenticated %}
+                        {% if cart_total_items > 0 %}
                             <span class="position-absolute top-1 start-100 translate-middle badge rounded-pill bg-danger">
-                                {{ user.cart.get_total_items }}
+                                {{ cart_total_items }}
                             </span>
                         {% endif %}
                     </a>

@@ -27,20 +27,32 @@
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            {% if item.variant.product.get_first_image %}
-                                            <img src="{{ item.variant.product.get_first_image.url }}" alt="{{ item.variant.product.name }}" class="rounded me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                            {% if user.is_authenticated %}
+                                                {% if item.variant.product.get_first_image %}
+                                                <img src="{{ item.variant.product.get_first_image.url }}" alt="{{ item.variant.product.name }}" class="rounded me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                                {% endif %}
+                                                <div>
+                                                    <h6 class="mb-0">{{ item.variant.product.name }}</h6>
+                                                    <small class="text-muted">
+                                                        {{ item.variant.get_color_display }} - {{ item.variant.get_size_display }}
+                                                    </small>
+                                                </div>
+                                            {% else %}
+                                                {% if item.variant.product.get_first_image %}
+                                                <img src="{{ item.variant.product.get_first_image.url }}" alt="{{ item.variant.product.name }}" class="rounded me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                                {% endif %}
+                                                <div>
+                                                    <h6 class="mb-0">{{ item.variant.product.name }}</h6>
+                                                    <small class="text-muted">
+                                                        {{ item.variant.get_color_display }} - {{ item.variant.get_size_display }}
+                                                    </small>
+                                                </div>
                                             {% endif %}
-                                            <div>
-                                                <h6 class="mb-0">{{ item.variant.product.name }}</h6>
-                                                <small class="text-muted">
-                                                    {{ item.variant.get_color_display }} - {{ item.variant.get_size_display }}
-                                                </small>
-                                            </div>
                                         </div>
                                     </td>
                                     <td>GH₵{{ item.variant.get_price }}</td>
                                     <td>
-                                        <form method="post" action="{% url 'core:cart_update' item.id %}" class="d-flex gap-2">
+                                        <form method="post" action="{% url 'core:cart_update' item.variant.id %}" class="d-flex gap-2">
                                             {% csrf_token %}
                                             <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.variant.stock }}" class="form-control form-control-sm" style="width: 70px;">
                                             <button type="submit" class="btn btn-sm btn-outline-primary">
@@ -48,9 +60,15 @@
                                             </button>
                                         </form>
                                     </td>
-                                    <td>GH₵{{ item.get_total_price }}</td>
                                     <td>
-                                        <a href="{% url 'core:cart_remove' item.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to remove this item?')">
+                                        {% if user.is_authenticated %}
+                                            GH₵{{ item.get_total_price }}
+                                        {% else %}
+                                            GH₵{{ item.total_price }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'core:cart_remove' item.variant.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to remove this item?')">
                                             <i class="bi bi-trash"></i>
                                         </a>
                                     </td>
@@ -70,13 +88,13 @@
                 </div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
-                        <span>Items ({{ cart.get_total_items }}):</span>
-                        <span>GH₵{{ cart.get_total_price }}</span>
+                        <span>Items ({{ total_items }}):</span>
+                        <span>GH₵{{ total_price }}</span>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between mb-4">
                         <strong>Total:</strong>
-                        <strong>GH₵{{ cart.get_total_price }}</strong>
+                        <strong>GH₵{{ total_price }}</strong>
                     </div>
                     <a href="{% url 'core:checkout' %}" class="btn btn-primary btn-lg w-100">
                         Proceed to Checkout

@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from .forms import UserRegistrationForm, UserProfileForm
 from core.models import Order
+from core.cart_utils import CartHandler
 
 
 def register(request):
@@ -32,6 +33,11 @@ def custom_login(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
+
+            # Merge session cart into user's database cart
+            cart_handler = CartHandler(request)
+            cart_handler.merge_session_cart_to_user()
+
             messages.success(request, f'Welcome back, {user.username}!')
 
             # Redirect to next page if specified

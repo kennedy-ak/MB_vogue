@@ -9,6 +9,7 @@ from django.conf import settings
 from django.utils import timezone
 from core.models import Order
 from .models import Payment
+from core.emails import send_payment_confirmation_email
 
 
 def generate_reference():
@@ -129,6 +130,9 @@ def verify_payment(request, reference):
                 if item.variant:
                     item.variant.stock -= item.quantity
                     item.variant.save()
+
+            # Send payment confirmation email
+            send_payment_confirmation_email(order, payment)
 
             messages.success(request, 'Payment verified successfully!')
         else:
