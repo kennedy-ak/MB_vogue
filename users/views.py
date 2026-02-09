@@ -53,6 +53,11 @@ def custom_login(request):
             next_page = request.GET.get('next')
             if next_page:
                 return redirect(next_page)
+
+            # Redirect superusers and staff to admin panel
+            if user.is_superuser or user.is_staff:
+                return redirect('admin_panel:dashboard')
+
             return redirect('core:home')
     else:
         form = AuthenticationForm()

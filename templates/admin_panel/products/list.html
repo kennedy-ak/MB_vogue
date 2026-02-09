@@ -95,12 +95,18 @@
                     </td>
                     <td>
                         <div class="btn-group" role="group">
-                            <a href="{% url 'admin_panel:product_edit' product.id %}" class="btn btn-sm btn-outline-primary">
+                            <a href="{% url 'admin_panel:product_edit' product.id %}" class="btn btn-sm btn-outline-primary" title="Edit">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <a href="{% url 'admin_panel:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
+                            <a href="{% url 'admin_panel:variant_add' product.id %}" class="btn btn-sm btn-outline-success" title="Add Variant">
+                                <i class="bi bi-plus-square"></i>
+                            </a>
+                            <a href="{% url 'admin_panel:product_delete' product.id %}" class="btn btn-sm btn-outline-danger" title="Delete">
                                 <i class="bi bi-trash"></i>
                             </a>
+                        </div>
+                        <div class="mt-1">
+                            <small class="text-muted">{{ product.variants.count }} variants</small>
                         </div>
                     </td>
                 </tr>

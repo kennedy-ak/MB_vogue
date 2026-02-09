@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /a \"C:\\\\Users\\\\User2\\\\Desktop\\\\MB_vogue\")"
+    ]
+  }
+}

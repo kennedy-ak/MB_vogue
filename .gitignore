@@ -39,3 +39,5 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+create_db.py
+db_backup.json
